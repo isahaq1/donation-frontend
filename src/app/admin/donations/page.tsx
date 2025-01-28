@@ -127,6 +127,10 @@ const DonationList: React.FC = () => {
         accessor: "description",
       },
       {
+        Header: "Donated By",
+        accessor: "user.username",
+      },
+      {
         Header: "Actions",
         Cell: ({ row }: any) => (
           <div className="flex gap-2">
