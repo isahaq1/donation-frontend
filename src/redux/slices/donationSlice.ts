@@ -28,6 +28,14 @@ interface DonationSummary {
   deletedCount: number;
 }
 
+interface MonthlySummary {
+  month: number; // 1-12 representing months
+  year: number; // e.g., 2024
+  monthName: string; //e.g.,January
+  totalAmount: number; // total donations for the month
+  count: number; // number of donations for the month
+}
+
 interface DonationState {
   donations: Donation[];
   donationDetails: Donation | null;
@@ -39,6 +47,7 @@ interface DonationState {
     pageSize: number;
   };
   donationSummary: DonationSummary | null;
+  monthlySummary: MonthlySummary[];
 }
 
 const initialState: DonationState = {
@@ -52,6 +61,7 @@ const initialState: DonationState = {
     pageSize: 10,
   },
   donationSummary: null,
+  monthlySummary: [],
 };
 
 // Create Donation
@@ -142,6 +152,21 @@ export const fetchDonationSummary = createAsyncThunk(
     try {
       const response = await axiosInstance.get("/donations/summary/report");
       console.log("donation summary" + response.data);
+      return response.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "An error occurred",
+      );
+    }
+  },
+);
+
+export const fetchMonthlySummary = createAsyncThunk(
+  "donation/fetchMonthlySummary",
+  async (_, thunkAPI) => {
+    try {
+      const response = await axiosInstance.get("/donations/summary/monthly");
+
       return response.data;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
@@ -249,6 +274,22 @@ const donationSlice = createSlice({
         },
       )
       .addCase(fetchDonationSummary.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      //monthly summary
+      .addCase(fetchMonthlySummary.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        fetchMonthlySummary.fulfilled,
+        (state, action: PayloadAction<MonthlySummary[]>) => {
+          state.loading = false;
+          state.monthlySummary = action.payload;
+        },
+      )
+      .addCase(fetchMonthlySummary.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

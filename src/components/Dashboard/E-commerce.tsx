@@ -5,8 +5,13 @@ import ChartOne from "../Charts/ChartOne";
 import ChartTwo from "../Charts/ChartTwo";
 import ChatCard from "../Chat/ChatCard";
 import TableOne from "../Tables/TableOne";
+import { toast } from "react-toastify";
 import CardDataStats from "../CardDataStats";
-import { fetchDonationSummary } from "@/redux/slices/donationSlice";
+import { useParams, useRouter } from "next/navigation";
+import {
+  fetchDonationSummary,
+  fetchMonthlySummary,
+} from "@/redux/slices/donationSlice";
 import { RootState, AppDispatch } from "@/redux/store";
 import { useSelector, useDispatch } from "react-redux";
 
@@ -19,13 +24,27 @@ const ChartThree = dynamic(() => import("@/components/Charts/ChartThree"), {
 });
 
 const ECommerce: React.FC = () => {
-  const { donationSummary, loading, error } = useSelector(
+  const router = useRouter();
+  const storedAuthUser = localStorage.getItem("authUser");
+  if (storedAuthUser) {
+    const authUser = JSON.parse(storedAuthUser);
+    const isAdmin = authUser.isAdmin;
+    if (!isAdmin) {
+      router.push("/admin/donations");
+      toast.error(
+        "You are not authorized to view this page ! Please contact with adminstrator",
+      );
+    }
+  }
+  const { donationSummary, monthlySummary, loading, error } = useSelector(
     (state: RootState) => state.donation,
   );
   const dispatch = useDispatch<AppDispatch>();
   useEffect(() => {
     dispatch(fetchDonationSummary());
+    dispatch(fetchMonthlySummary());
   }, [dispatch]);
+  console.log("Monthly Summary" + monthlySummary);
 
   return (
     <>
@@ -138,13 +157,6 @@ const ECommerce: React.FC = () => {
 
       <div className="mt-4 grid grid-cols-12 gap-4 md:mt-6 md:gap-6 2xl:mt-7.5 2xl:gap-7.5">
         <ChartOne />
-        <ChartTwo />
-        <ChartThree />
-        <MapOne />
-        <div className="col-span-12 xl:col-span-8">
-          <TableOne />
-        </div>
-        <ChatCard />
       </div>
     </>
   );
