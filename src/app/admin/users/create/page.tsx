@@ -8,10 +8,10 @@ import { useState, useEffect } from "react";
 
 type FormData = {
   username: string;
+  name: string;
   email: string;
   password: string;
-  roleId: string; // Role ID field
-  isAdmin: boolean; // Is Admin field
+  role: string; // Role ID field
 };
 
 export default function Register() {
@@ -20,28 +20,13 @@ export default function Register() {
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>();
-  const [roles, setRoles] = useState<{ id: string; name: string }[]>([]); // State to store roles
   const router = useRouter();
-
-  // Fetch roles from the API (replace with your actual endpoint)
-  useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        const response = await axiosInstance.get("/roles"); // Example roles API endpoint
-        setRoles(response.data); // Assuming the response contains a list of roles
-      } catch (error) {
-        toast.error("Failed to fetch roles.");
-      }
-    };
-
-    fetchRoles();
-  }, []);
 
   const onSubmit = async (data: FormData) => {
     try {
       // Send POST request with role_id and isAdmin
-      await axiosInstance.post("/users/addUser", data);
-      toast.success("Registration successful! Please verify your email.");
+      await axiosInstance.post("/auth/register", data);
+      toast.success("Registration successful!.");
       router.push("/admin/users/list");
     } catch (error) {
       toast.error("Registration failed.");
@@ -55,6 +40,13 @@ export default function Register() {
       </h1>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Username Input */}
+        <input
+          {...register("name", { required: "Name is required" })}
+          placeholder="Name"
+          className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+        />
+        {errors.name && <p className="text-red-500">{errors.name.message}</p>}
+
         <input
           {...register("username", { required: "Username is required" })}
           placeholder="Username"
@@ -99,25 +91,13 @@ export default function Register() {
             Select Role
           </label>
           <select
-            {...register("roleId", { required: "Role is required" })}
+            {...register("role", { required: "Role is required" })}
             className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
           >
-            <option value="">Select a role</option>
-            {roles.map((role) => (
-              <option key={role.id} value={role.id}>
-                {role.name}
-              </option>
-            ))}
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
           </select>
-          {errors.roleId && (
-            <p className="text-red-500">{errors.roleId.message}</p>
-          )}
-        </div>
-
-        {/* Admin Checkbox */}
-        <div className="flex items-center space-x-2">
-          <input type="checkbox" {...register("isAdmin")} className="h-4 w-4" />
-          <label className="text-gray-700">Is Admin</label>
+          {errors.role && <p className="text-red-500">{errors.role.message}</p>}
         </div>
 
         {/* Submit Button */}

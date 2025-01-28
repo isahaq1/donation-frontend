@@ -15,16 +15,16 @@ axiosInstance.interceptors.request.use(
     try {
       const token = localStorage.getItem("token");
       if (token) {
-        // const decodedToken = (jwtDecode as any)(token) as { exp: number };
-        const decodedToken = jwtDecode(token);
+        const decodedToken = (jwtDecode as any)(token) as { exp: number };
+        // const decodedToken = jwtDecode(token);
         const currentTime = Date.now() / 1000;
         // Check if token will expire in the next 5 minutes
-        // if (decodedToken?.exp && decodedToken.exp < currentTime + 300) {
-        //   // Here you could add refresh token logic if needed
-        //   localStorage.removeItem("token");
-        //   window.location.href = "/auth/login";
-        //   return Promise.reject("Token expired");
-        // }
+        if (decodedToken?.exp && decodedToken.exp < currentTime + 300) {
+          // Here you could add refresh token logic if needed
+          localStorage.removeItem("token");
+          window.location.href = "/auth/login";
+          return Promise.reject("Token expired");
+        }
 
         config.headers.Authorization = `Bearer ${token}`;
       }
