@@ -26,6 +26,8 @@ or
 ```
 yarn dev
 
-''''
-## ACCESS Information
+
+
+
+## ACCESS Installation
 for access you should register from registration link. find registration link in signin page
