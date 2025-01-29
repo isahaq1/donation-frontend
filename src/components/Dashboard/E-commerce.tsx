@@ -36,15 +36,13 @@ const ECommerce: React.FC = () => {
       );
     }
   }
-  const { donationSummary, monthlySummary, loading, error } = useSelector(
+  const { donationSummary, loading, error } = useSelector(
     (state: RootState) => state.donation,
   );
   const dispatch = useDispatch<AppDispatch>();
   useEffect(() => {
     dispatch(fetchDonationSummary());
-    dispatch(fetchMonthlySummary());
   }, [dispatch]);
-  console.log("Monthly Summary" + monthlySummary);
 
   return (
     <>

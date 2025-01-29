@@ -2,6 +2,14 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "@/app/api/axiosInstance";
 import { jwtDecode } from "jwt-decode";
 
+interface User {
+  id: string;
+  username: string;
+  email: string;
+  name: string;
+  role: string;
+}
+
 interface AuthState {
   user: any | null;
   token: string | null;
@@ -47,6 +55,20 @@ export const loginUser = createAsyncThunk(
   },
 );
 
+export const userRegister = createAsyncThunk(
+  "auth/registerUser",
+  async (userData: Omit<User, "id">, thunkAPI) => {
+    try {
+      const response = await axiosInstance.post("/auth/register", userData);
+      return response.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "An error occurred",
+      );
+    }
+  },
+);
+
 export const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -77,6 +99,19 @@ export const authSlice = createSlice({
         state.tokenExpiry = action.payload.tokenExpiry;
       })
       .addCase(loginUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Create User
+      .addCase(userRegister.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(userRegister.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+      })
+      .addCase(userRegister.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
