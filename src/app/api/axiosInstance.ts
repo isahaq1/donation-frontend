@@ -22,7 +22,7 @@ axiosInstance.interceptors.request.use(
         if (decodedToken?.exp && decodedToken.exp < currentTime + 300) {
           // Here you could add refresh token logic if needed
           localStorage.removeItem("token");
-          window.location.href = "/auth/login";
+          window.location.href = "/auth/signin";
           return Promise.reject("Token expired");
         }
 
@@ -31,7 +31,7 @@ axiosInstance.interceptors.request.use(
       return config;
     } catch (error) {
       localStorage.removeItem("token");
-      window.location.href = "/login";
+      window.location.href = "/auth/signin";
       return Promise.reject(error);
     }
   },

@@ -36,6 +36,28 @@ interface MonthlySummary {
   count: number; // number of donations for the month
 }
 
+interface DailyReport {
+  date: string;
+  activeAmount: number;
+  activeCount: number;
+  deletedAmount: number;
+  deletedCount: number;
+  totalAmount: number;
+  totalCount: number;
+}
+
+interface DateRangeReport {
+  startDate: string;
+  endDate: string;
+  totalAmount: number;
+  totalCount: number;
+  activeAmount: number;
+  activeCount: number;
+  deletedAmount: number;
+  deletedCount: number;
+  dailyReports: DailyReport[];
+}
+
 interface DonationState {
   donations: Donation[];
   donationDetails: Donation | null;
@@ -48,6 +70,7 @@ interface DonationState {
   };
   donationSummary: DonationSummary | null;
   monthlySummary: MonthlySummary[];
+  dateRangeReport: DateRangeReport | null;
 }
 
 const initialState: DonationState = {
@@ -62,6 +85,7 @@ const initialState: DonationState = {
   },
   donationSummary: null,
   monthlySummary: [],
+  dateRangeReport: null,
 };
 
 // Create Donation
@@ -167,6 +191,23 @@ export const fetchMonthlySummary = createAsyncThunk(
     try {
       const response = await axiosInstance.get("/donations/summary/monthly");
 
+      return response.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "An error occurred",
+      );
+    }
+  },
+);
+
+export const fetchDateRangeReport = createAsyncThunk(
+  "donation/fetchDateRangeReport",
+  async (dateRange: { startDate: string; endDate: string }, thunkAPI) => {
+    try {
+      const response = await axiosInstance.post(
+        `/donations/report/daterange`,
+        dateRange,
+      );
       return response.data;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
@@ -290,6 +331,21 @@ const donationSlice = createSlice({
         },
       )
       .addCase(fetchMonthlySummary.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(fetchDateRangeReport.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        fetchDateRangeReport.fulfilled,
+        (state, action: PayloadAction<DateRangeReport>) => {
+          state.loading = false;
+          state.dateRangeReport = action.payload;
+        },
+      )
+      .addCase(fetchDateRangeReport.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
